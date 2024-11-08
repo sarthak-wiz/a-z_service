@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Customer Dashboard</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h3>Available Services</h3>
+            {% if services %}
+                <div class="row">
+                    {% for service in services %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <p class="card-text">{{ service.description }}</p>
+                                <p class="card-text"><strong>Base Price:</strong> ${{ "%.2f"|format(service.base_price) }}</p>
+                                <a href="{{ url_for('customer.request_service', service_id=service.id) }}" 
+                                   class="btn btn-primary">Request Service</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No services available at the moment.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h3>My Service Requests</h3>
+            {% if current_user.customer_requests %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Professional</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in current_user.customer_requests %}
+                        <tr>
+                            <td>{{ request.service.name }}</td>
+                            <td>{{ request.status }}</td>
+                            <td>{{ request.assigned_professional.username if request.assigned_professional else 'Not assigned' }}</td>
+                            <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>You haven't made any service requests yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

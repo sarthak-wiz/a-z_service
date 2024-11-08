@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Service Professional Dashboard</h2>
+    
+    {% if not current_user.is_approved %}
+    <div class="alert alert-warning">
+        Your account is pending approval from an administrator. You'll be able to accept service requests once approved.
+    </div>
+    {% endif %}
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Assigned Requests</h3>
+                </div>
+                <div class="card-body">
+                    {% if assigned_requests %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in assigned_requests %}
+                            <tr>
+                                <td>{{ request.service.name }}</td>
+                                <td>{{ request.requesting_customer.username }}</td>
+                                <td>
+                                    <span class="badge badge-{{ 'success' if request.status == 'completed' else 'primary' }}">
+                                        {{ request.status }}
+                                    </span>
+                                </td>
+                                <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if request.status == 'accepted' %}
+                                    <form action="{{ url_for('professional.complete_request', request_id=request.id) }}" 
+                                          method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            Mark Complete
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No assigned requests.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_approved %}
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Available Requests</h3>
+                </div>
+                <div class="card-body">
+                    {% if available_requests %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in available_requests %}
+                            <tr>
+                                <td>{{ request.service.name }}</td>
+                                <td>{{ request.requesting_customer.username }}</td>
+                                <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <form action="{{ url_for('professional.accept_request', request_id=request.id) }}" 
+                                          method="POST">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            Accept Request
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No available requests at the moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

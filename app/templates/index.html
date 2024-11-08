@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome to A-Z Household Services</h1>
+    {% if current_user.is_authenticated %}
+        <p>Welcome back, {{ current_user.username }}!</p>
+        {% if current_user.role == 'customer' %}
+            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+        {% elif current_user.role == 'professional' %}
+            <a href="{{ url_for('professional.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+        {% elif current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+        {% endif %}
+    {% else %}
+        <p>Please <a href="{{ url_for('main.login') }}">login</a> or <a href="{{ url_for('main.register') }}">register</a> to continue.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+<a href="{{ url_for('admin.add_service') }}">Add New Service</a>
+
+<h3>Service List</h3>
+<table>
+    <tr>
+        <th>Service Name</th>
+        <th>Description</th>
+        <th>Base Price</th>
+        <th>Actions</th>
+    </tr>
+    {% for service in services %}
+    <tr>
+        <td>{{ service.name }}</td>
+        <td>{{ service.description }}</td>
+        <td>{{ service.base_price }}</td>
+        <td><a href="{{ url_for('admin.edit_service', service_id=service.id) }}">Edit</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

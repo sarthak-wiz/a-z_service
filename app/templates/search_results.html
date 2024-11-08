@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Search Results</h2>
+{% if services %}
+    <table>
+        <tr>
+            <th>Service Name</th>
+            <th>Description</th>
+            <th>Base Price</th>
+            <th>Action</th>
+        </tr>
+        {% for service in services %}
+        <tr>
+            <td>{{ service.name }}</td>
+            <td>{{ service.description }}</td>
+            <td>{{ service.base_price }}</td>
+            <td><a href="{{ url_for('customer.request_service', service_id=service.id) }}">Request Service</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No services found matching your criteria.</p>
+{% endif %}
+{% endblock %}

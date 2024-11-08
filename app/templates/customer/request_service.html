@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Request Service</h2>
+                </div>
+                <div class="card-body">
+                    <div class="service-details mb-4">
+                        <h3>{{ service.name }}</h3>
+                        <p>{{ service.description }}</p>
+                        <p><strong>Base Price:</strong> ${{ "%.2f"|format(service.base_price) }}</p>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group">
+                            <label for="date_of_request">{{ form.date_of_request.label }}</label>
+                            {{ form.date_of_request(class="form-control", type="date") }}
+                            {% if form.date_of_request.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.date_of_request.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="remarks">{{ form.remarks.label }}</label>
+                            {{ form.remarks(class="form-control", rows="4") }}
+                            {% if form.remarks.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.remarks.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mt-4">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

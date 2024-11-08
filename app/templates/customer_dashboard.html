@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Customer Dashboard</h2>
+<h3>Available Services</h3>
+<table>
+    <tr>
+        <th>Service Name</th>
+        <th>Description</th>
+        <th>Base Price</th>
+        <th>Action</th>
+    </tr>
+    {% for service in services %}
+    <tr>
+        <td>{{ service.name }}</td>
+        <td>{{ service.description }}</td>
+        <td>{{ service.base_price }}</td>
+        <td><a href="{{ url_for('customer.request_service', service_id=service.id) }}">Request Service</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Your Service Requests</h3>
+<table>
+    <tr>
+        <th>Service</th>
+        <th>Status</th>
+        <th>Remarks</th>
+    </tr>
+    {% for request in service_requests %}
+    <tr>
+        <td>{{ request.service.name }}</td>
+        <td>{{ request.status }}</td>
+        <td>{{ request.remarks }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
