@@ -21,9 +21,9 @@ def dashboard():
     # Query assigned requests directly from ServiceRequest model
     assigned_requests = ServiceRequest.query.filter_by(
         professional_id=current_user.id,
-        status='assigned'
+        status='accepted'
     ).all()
-    
+    print("assigned_requests", assigned_requests)
     # Get available requests (not assigned to any professional)
     available_requests = ServiceRequest.query.filter_by(
         professional_id=None,

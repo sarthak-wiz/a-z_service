@@ -1,19 +1,53 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Welcome to A-Z Household Services</h1>
+<div class="main-container text-center">
+    <h1 class="display-4 mb-4">Welcome to A-Z Household Services</h1>
+    <p class="lead mb-5">Your One-Stop Solution for All Household Services</p>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Professional Services</h3>
+                    <p class="card-text">Get access to verified professionals for all your household needs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Easy Booking</h3>
+                    <p class="card-text">Book services with just a few clicks, anytime, anywhere.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Quality Assured</h3>
+                    <p class="card-text">All our professionals are verified and quality checked.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if current_user.is_authenticated %}
-        <p>Welcome back, {{ current_user.username }}!</p>
-        {% if current_user.role == 'customer' %}
-            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
-        {% elif current_user.role == 'professional' %}
-            <a href="{{ url_for('professional.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
-        {% elif current_user.role == 'admin' %}
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
-        {% endif %}
+        <div class="mt-4">
+            {% if current_user.role == 'customer' %}
+                <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            {% elif current_user.role == 'professional' %}
+                <a href="{{ url_for('professional.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            {% elif current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+            {% endif %}
+        </div>
     {% else %}
-        <p>Please <a href="{{ url_for('main.login') }}">login</a> or <a href="{{ url_for('main.register') }}">register</a> to continue.</p>
+        <div class="mt-4">
+            <h2 class="mb-3">Get Started Today</h2>
+            <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg mr-3">Login</a>
+            <a href="{{ url_for('main.register') }}" class="btn btn-success btn-lg">Register</a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}
