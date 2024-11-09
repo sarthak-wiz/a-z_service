@@ -86,20 +86,52 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-light d-flex justify-content-between">
+        <div>
         <a class="navbar-brand" href="{{ url_for('main.index') }}">A-Z Services</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-            {% if current_user.is_authenticated %}
-                <span class="navbar-text mr-3">Welcome, {{ current_user.username }}!</span>
-                <a class="btn btn-logout" href="{{ url_for('main.logout') }}">Logout</a>
-            {% else %}
-                <a class="btn btn-login" href="{{ url_for('main.login') }}">Login</a>
-                <a class="btn btn-register" href="{{ url_for('main.register') }}">Register</a>
-            {% endif %}
         </div>
+        <!-- <div class="collapse navbar-collapse justify-content-end" id="navbarNav"> -->
+            <ul class="navbar-nav">
+                <!-- Home link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+                </li>
+    
+                <!-- Dashboard link, conditionally rendered based on user role -->
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        {% if current_user.role == 'customer' %}
+                            <a class="nav-link" href="{{ url_for('customer.dashboard') }}">Dashboard</a>
+                        {% elif current_user.role == 'professional' %}
+                            <a class="nav-link" href="{{ url_for('professional.dashboard') }}">Dashboard</a>
+                        {% elif current_user.role == 'admin' %}
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+                        {% endif %}
+                    </li>
+                {% endif %}
+    
+                <!-- Services link for authenticated users -->
+                {% if current_user.role=="admin" %} 
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.manage_services') }}">Services</a>
+                </li>
+                {% endif %}
+            </ul>
+    
+            <!-- Authentication options -->
+            <div class="navbar-text">
+                {% if current_user.is_authenticated %}
+                    <span class="navbar-text mr-3">Welcome, {{ current_user.username }}!</span>
+                    <a class="btn btn-logout" href="{{ url_for('main.logout') }}">Logout</a>
+                {% else %}
+                    <a class="btn btn-login" href="{{ url_for('main.login') }}">Login</a>
+                    <a class="btn btn-register" href="{{ url_for('main.register') }}">Register</a>
+                {% endif %}
+            </div>
+        <!-- </div> -->
     </nav>
 
     <div class="page-wrapper">

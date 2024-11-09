@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Our Services</h2>
+    
+    <div class="row">
+        {% for service in services %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ service.name }}</h5>
+                    <p class="card-text">{{ service.description }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Base Price: ${{ "%.2f"|format(service.base_price) }}<br>
+                            Time Required: {{ service.time_required }}
+                        </small>
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                    <a href="{{ url_for('customer.request_service', service_id=service.id) }}" 
+                       class="btn btn-primary btn-block">Request Service</a>
+                    {% elif not current_user.is_authenticated %}
+                    <a href="{{ url_for('main.login') }}" class="btn btn-secondary btn-block">
+                        Login to Request
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

@@ -32,36 +32,61 @@ def add_service():
         service = Service(
             name=form.name.data,
             description=form.description.data,
-            base_price=form.base_price.data
+            base_price=form.base_price.data,
+            time_required=form.time_required.data
         )
-        db.session.add(service)
-        db.session.commit()
-        flash('Service added successfully!', 'success')
-        return redirect(url_for('admin.dashboard'))
-    return render_template('admin/add_service.html', form=form)
+        try:
+            db.session.add(service)
+            db.session.commit()
+            flash('Service added successfully!', 'success')
+            return redirect(url_for('admin.manage_services'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error adding service. Please try again.', 'danger')
+            print(f"Error: {str(e)}")
+    return render_template('admin/add_service.html', form=form, title="Add New Service")
 
-@admin_bp.route('/services/<int:service_id>/edit', methods=['GET', 'POST'])
+@admin_bp.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
 @admin_required
 def edit_service(service_id):
     service = Service.query.get_or_404(service_id)
     form = ServiceForm(obj=service)
+    
     if form.validate_on_submit():
-        service.name = form.name.data
-        service.description = form.description.data
-        service.base_price = form.base_price.data
-        db.session.commit()
-        flash('Service updated successfully!', 'success')
-        return redirect(url_for('admin.dashboard'))
-    return render_template('admin/add_service.html', form=form, service=service)
+        try:
+            service.name = form.name.data
+            service.description = form.description.data
+            service.base_price = form.base_price.data
+            service.time_required = form.time_required.data
+            db.session.commit()
+            flash('Service updated successfully!', 'success')
+            return redirect(url_for('admin.manage_services'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating service. Please try again.', 'danger')
+            print(f"Error: {str(e)}")
+    
+    return render_template('admin/edit_service.html', form=form, service=service, title="Edit Service")
 
-@admin_bp.route('/services/<int:service_id>/delete', methods=['POST'])
+@admin_bp.route('/services/delete/<int:service_id>', methods=['POST'])
 @admin_required
 def delete_service(service_id):
     service = Service.query.get_or_404(service_id)
-    db.session.delete(service)
-    db.session.commit()
-    flash('Service deleted successfully!', 'success')
-    return redirect(url_for('admin.dashboard'))
+    try:
+        db.session.delete(service)
+        db.session.commit()
+        flash('Service deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting service. Please try again.', 'danger')
+        print(f"Error: {str(e)}")
+    return redirect(url_for('admin.manage_services'))
+
+@admin_bp.route('/services')
+@admin_required
+def manage_services():
+    services = Service.query.all()
+    return render_template('admin/manage_services.html', services=services, title="Manage Services")
 
 @admin_bp.route('/professionals/<int:user_id>/approve', methods=['POST'])
 @admin_required

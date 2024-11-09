@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <h2>Customer Dashboard</h2>
     
+    <!-- Available Services Section -->
     <div class="row mt-4">
         <div class="col-md-12">
             <h3>Available Services</h3>
@@ -29,34 +30,92 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-12">
+    <!-- Service Requests Section -->
+    <div class="card mb-4">
+        <div class="card-header">
             <h3>My Service Requests</h3>
-            {% if current_user.customer_requests %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Professional</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for request in current_user.customer_requests %}
-                        <tr>
-                            <td>{{ request.service.name }}</td>
-                            <td>{{ request.status }}</td>
-                            <td>{{ request.assigned_professional.username if request.assigned_professional else 'Not assigned' }}</td>
-                            <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        </div>
+        <div class="card-body">
+            {% if service_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Professional</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions/Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in service_requests %}
+                    <tr>
+                        <td>{{ request.requested_service.name }}</td>
+                        <td>
+                            {% if request.professional %}
+                                {{ request.professional.username }}
+                            {% else %}
+                                <span class="text-muted">Waiting for assignment</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if request.status == 'completed' %}
+                                <span class="badge badge-success">Completed</span>
+                            {% elif request.status == 'pending_customer_approval' %}
+                                <span class="badge badge-warning">Pending Review</span>
+                            {% elif request.status == 'in_progress' %}
+                                <span class="badge badge-info">In Progress</span>
+                            {% elif request.status == 'assigned' %}
+                                <span class="badge badge-primary">Assigned</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ request.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.status == 'pending_customer_approval' and not request.reviews %}
+                                <a href="{{ url_for('customer.add_review', request_id=request.id) }}" 
+                                   class="btn btn-primary btn-sm">Add Review</a>
+                            {% elif request.status == 'completed' and request.reviews %}
+                                <span class="text-warning">
+                                    {{ '⭐' * request.reviews[0].rating }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p>You haven't made any service requests yet.</p>
+            <p>No service requests yet.</p>
             {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+.badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.8em;
+}
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+.badge-info {
+    background-color: #17a2b8;
+}
+.badge-success {
+    background-color: #28a745;
+}
+.badge-primary {
+    background-color: #007bff;
+}
+.badge-secondary {
+    background-color: #6c757d;
+}
+.text-warning {
+    font-size: 1.2em;
+}
+</style>
 {% endblock %} 
