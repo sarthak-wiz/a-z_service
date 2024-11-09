@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.models import ServiceRequest, db
 from functools import wraps
+import matplotlib.pyplot as plt
+import io
+import base64
 
 professional_bp = Blueprint('professional', __name__)
 
@@ -29,11 +32,34 @@ def dashboard():
         professional_id=current_user.id
     ).order_by(ServiceRequest.date_of_request.desc()).all()
     
-    print(f"assigned_requests {assigned_requests}")  # Debug print
+    # Generate Request Status Chart
+    status_counts = {
+        'assigned': 0,
+        'in_progress': 0,
+        'completed': 0,
+        'pending_customer_approval': 0
+    }
+    for request in assigned_requests:
+        status_counts[request.status] = status_counts.get(request.status, 0) + 1
+    
+    plt.figure(figsize=(8, 8))
+    plt.pie(status_counts.values(),
+        labels=status_counts.keys(),
+        colors=['#007bff', '#17a2b8', '#28a745', '#ffc107'],
+        autopct='%1.1f%%'
+    )
+    plt.title('My Service Requests Status')
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    status_chart = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
     
     return render_template('professional/dashboard.html',
                          available_requests=available_requests,
-                         assigned_requests=assigned_requests)
+                         assigned_requests=assigned_requests,
+                         status_chart=status_chart)
 
 @professional_bp.route('/accept_request/<int:request_id>', methods=['POST'])
 @professional_required

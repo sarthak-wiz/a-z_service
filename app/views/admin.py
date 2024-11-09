@@ -1,9 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.models import User, Service
+from app.models import User, Service, ServiceRequest
 from app import db
 from app.forms import ProfessionalSearchForm, ServiceForm
 from functools import wraps
+import matplotlib.pyplot as plt
+import io
+import base64
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -16,7 +19,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@admin_bp.route('/admin/search_professionals', methods=['GET'])
+@admin_bp.route('/search_professionals', methods=['GET'])
 @admin_required
 def search_professionals():
     form = ProfessionalSearchForm()
@@ -40,7 +43,7 @@ def search_professionals():
                          professionals=professionals,
                          form=form)
 
-@admin_bp.route('/admin/approve_professional/<int:user_id>', methods=['POST'])
+@admin_bp.route('/approve_professional/<int:user_id>', methods=['POST'])
 @admin_required
 def approve_professional(user_id):
     professional = User.query.get_or_404(user_id)
@@ -53,7 +56,7 @@ def approve_professional(user_id):
     flash(f'Professional {professional.username} has been approved.', 'success')
     return redirect(url_for('admin.search_professionals'))
 
-@admin_bp.route('/admin/block_professional/<int:user_id>', methods=['POST'])
+@admin_bp.route('/block_professional/<int:user_id>', methods=['POST'])
 @admin_required
 def block_professional(user_id):
     professional = User.query.get_or_404(user_id)
@@ -67,7 +70,7 @@ def block_professional(user_id):
     flash(f'Professional {professional.username} has been {status}.', 'success')
     return redirect(url_for('admin.search_professionals'))
 
-@admin_bp.route('/admin/dashboard')
+@admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
     # Get counts for dashboard
@@ -76,20 +79,61 @@ def dashboard():
     blocked_professionals = User.query.filter_by(role='professional', is_blocked=True).count()
     total_customers = User.query.filter_by(role='customer').count()
     
-    # Get recent professionals
-    recent_professionals = User.query.filter_by(role='professional')\
-                              .order_by(User.id.desc())\
-                              .limit(5)\
-                              .all()
+    # Generate Professional Status Chart
+    plt.figure(figsize=(8, 8))
+    plt.pie([
+        total_professionals - pending_approvals - blocked_professionals,
+        pending_approvals,
+        blocked_professionals
+    ], 
+        labels=['Approved', 'Pending', 'Blocked'],
+        colors=['#28a745', '#ffc107', '#dc3545'],
+        autopct='%1.1f%%'
+    )
+    plt.title('Professional Status Distribution')
+    
+    # Save to base64 string
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    professional_chart = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    # Generate Service Request Status Chart
+    service_requests = ServiceRequest.query.all()
+    status_counts = {
+        'requested': 0,
+        'assigned': 0,
+        'in_progress': 0,
+        'completed': 0,
+        'cancelled': 0
+    }
+    for request in service_requests:
+        status_counts[request.status] = status_counts.get(request.status, 0) + 1
+    
+    plt.figure(figsize=(8, 8))
+    plt.pie(status_counts.values(),
+        labels=status_counts.keys(),
+        colors=['#007bff', '#17a2b8', '#ffc107', '#28a745', '#dc3545'],
+        autopct='%1.1f%%'
+    )
+    plt.title('Service Request Status Distribution')
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    requests_chart = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
     
     return render_template('admin/dashboard.html',
                          total_professionals=total_professionals,
                          pending_approvals=pending_approvals,
                          blocked_professionals=blocked_professionals,
                          total_customers=total_customers,
-                         recent_professionals=recent_professionals)
+                         professional_chart=professional_chart,
+                         requests_chart=requests_chart)
 
-@admin_bp.route('/admin/manage_services')
+@admin_bp.route('/manage_services')
 @admin_required
 def manage_services():
     services = Service.query.all()
@@ -98,7 +142,7 @@ def manage_services():
                          services=services, 
                          form=form)
 
-@admin_bp.route('/admin/add_service', methods=['POST'])
+@admin_bp.route('/add_service', methods=['POST'])
 @admin_required
 def add_service():
     form = ServiceForm()
@@ -118,7 +162,7 @@ def add_service():
             flash('Error adding service. Please try again.', 'danger')
     return redirect(url_for('admin.manage_services'))
 
-@admin_bp.route('/admin/edit_service/<int:service_id>', methods=['POST'])
+@admin_bp.route('/edit_service/<int:service_id>', methods=['POST'])
 @admin_required
 def edit_service(service_id):
     service = Service.query.get_or_404(service_id)
@@ -136,7 +180,7 @@ def edit_service(service_id):
             flash('Error updating service. Please try again.', 'danger')
     return redirect(url_for('admin.manage_services'))
 
-@admin_bp.route('/admin/delete_service/<int:service_id>', methods=['POST'])
+@admin_bp.route('/delete_service/<int:service_id>', methods=['POST'])
 @admin_required
 def delete_service(service_id):
     service = Service.query.get_or_404(service_id)

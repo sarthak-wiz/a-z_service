@@ -4,6 +4,9 @@ from app.models import ServiceRequest, Service, Review, User
 from app import db
 from app.forms import ReviewForm, ServiceRequestForm, ServiceSearchForm
 from functools import wraps
+import matplotlib.pyplot as plt
+import io
+import base64
 
 customer_bp = Blueprint('customer', __name__)
 
@@ -73,9 +76,36 @@ def add_review(request_id):
 def dashboard():
     services = Service.query.all()
     service_requests = ServiceRequest.query.filter_by(customer_id=current_user.id).all()
-    return render_template('customer/dashboard.html', 
+    
+    # Generate Service Request Status Chart
+    status_counts = {
+        'requested': 0,
+        'assigned': 0,
+        'in_progress': 0,
+        'completed': 0,
+        'cancelled': 0
+    }
+    for request in service_requests:
+        status_counts[request.status] = status_counts.get(request.status, 0) + 1
+    
+    plt.figure(figsize=(8, 8))
+    plt.pie(status_counts.values(),
+        labels=status_counts.keys(),
+        colors=['#007bff', '#17a2b8', '#ffc107', '#28a745', '#dc3545'],
+        autopct='%1.1f%%'
+    )
+    plt.title('My Service Requests Status')
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    status_chart = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    return render_template('customer/dashboard.html',
                          services=services,
-                         service_requests=service_requests)
+                         service_requests=service_requests,
+                         status_chart=status_chart)
 
 @customer_bp.route('/request_service', methods=['GET', 'POST'])
 @customer_required

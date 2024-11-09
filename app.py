@@ -20,13 +20,9 @@ def create_app():
     login_manager.login_view = 'auth.login'  # Adjust 'auth.login' to your actual login route
     login_manager.login_message_category = 'info'
 
-    # Register blueprints
-    from app.views.admin import admin_bp
-    from app.views.customer import customer_bp
-    from app.views.professional import professional_bp
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(customer_bp, url_prefix='/customer')
-    app.register_blueprint(professional_bp, url_prefix='/professional')
+     # Register blueprints using the function from views/__init__.py
+    from app.views import register_blueprints
+    register_blueprints(app)
 
     # Load user callback for Flask-Login
     from app.models import User  # Assuming User model is in models/user.py
