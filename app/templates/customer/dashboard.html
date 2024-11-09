@@ -62,7 +62,7 @@
                 <tbody>
                     {% for request in service_requests %}
                     <tr>
-                        <td>{{ request.service.name }}</td>
+                        <td>{{ request.requested_service.name }}</td>
                         <td>
                             {% if request.professional %}
                                 {{ request.professional.username }}
