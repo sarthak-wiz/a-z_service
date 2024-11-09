@@ -1,6 +1,5 @@
 from app import create_app, db
-from app.models import User, Service
-from werkzeug.security import generate_password_hash
+from app.models import User, Service, ServiceRequest, Review
 from datetime import datetime
 
 app = create_app()
@@ -8,18 +7,39 @@ app = create_app()
 with app.app_context():
     # Drop all tables
     db.drop_all()
-    
     # Create all tables
     db.create_all()
-    
-    # Create admin user
+
+    # Create admin user with simple password
     admin = User(
         username='admin',
-        password=('admin123'),
+        password='admin123',  # Simple password without hashing
         role='admin',
         is_approved=True
     )
-    
+    db.session.add(admin)
+
+    # Create sample professional
+    professional = User(
+        username='pro1',
+        password='password123',
+        role='professional',
+        is_approved=True,
+        location='New York',
+        pincode='100001',
+        professional_id='PRO12345'
+    )
+    db.session.add(professional)
+
+    # Create sample customer
+    customer = User(
+        username='customer1',
+        password='password123',
+        role='customer',
+        is_approved=True
+    )
+    db.session.add(customer)
+
     # Create initial services
     services = [
         Service(
@@ -65,13 +85,12 @@ with app.app_context():
             created_at=datetime.utcnow()
         )
     ]
-    
+
     # Add all to session
     db.session.add(admin)
     for service in services:
         db.session.add(service)
-    
-    # Commit changes
+
     try:
         db.session.commit()
         print("Database recreated successfully!")

@@ -3,30 +3,153 @@
 {% block content %}
 <div class="main-container auth-container">
     <h2 class="text-center mb-4">Create New Account</h2>
+    
     <form method="POST" action="{{ url_for('main.register') }}">
         {{ form.hidden_tag() }}
-        <div class="form-group">
-            <label for="username">Username:</label>
-            {{ form.username(class="form-control", placeholder="Choose a username") }}
+        
+        <!-- Step 1: Role Selection -->
+        <div class="step-1">
+            <div class="form-group mb-3">
+                <label for="role" class="form-label">I want to register as:</label>
+                <select class="form-control mb-3" id="roleSelect" name="role">
+                    <option value="">Select Role</option>
+                    <option value="customer">Customer</option>
+                    <option value="professional">Professional</option>
+                </select>
+            </div>
+            
+            <!-- Start Registration Button -->
+            <button class="btn btn-primary w-100 mb-4" type="button"
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#registrationFields"
+                    aria-expanded="false" 
+                    aria-controls="registrationFields">
+                Start Registration
+            </button>
         </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            {{ form.password(class="form-control", placeholder="Choose a password") }}
-        </div>
-        <div class="form-group">
-            <label for="confirm_password">Confirm Password:</label>
-            {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
-        </div>
-        <div class="form-group">
-            <label for="role">Register as:</label>
-            {{ form.role(class="form-control") }}
-        </div>
-        <div class="text-center">
-            <button type="submit" class="btn btn-success btn-lg btn-block">Register</button>
+
+        <!-- Step 2: Registration Fields (Initially Hidden) -->
+        <div class="collapse" id="registrationFields">
+            <div class="card card-body">
+                <div class="form-group mb-3">
+                    <label for="username">Username:</label>
+                    {{ form.username(class="form-control", placeholder="Choose a username") }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Professional-specific fields -->
+                <div id="professionalFields" class="{% if form.role.data != 'professional' %}d-none{% endif %}">
+                    {% if professional_id %}
+                    <div class="form-group mb-3">
+                        <label>Your Professional ID:</label>
+                        <div class="alert alert-info">
+                            {{ professional_id }}
+                            <input type="hidden" name="professional_id" value="{{ professional_id }}">
+                        </div>
+                        <small class="text-muted">Please save this ID for future reference</small>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group mb-3">
+                        <label for="location">Location:</label>
+                        {{ form.location(class="form-control", placeholder="Enter your location") }}
+                        {% if form.location.errors %}
+                            {% for error in form.location.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="pincode">PIN Code:</label>
+                        {{ form.pincode(class="form-control", placeholder="123456") }}
+                        {% if form.pincode.errors %}
+                            {% for error in form.pincode.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password">Password:</label>
+                    {{ form.password(class="form-control", placeholder="Choose a password") }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="confirm_password">Confirm Password:</label>
+                    {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                    {% if form.confirm_password.errors %}
+                        {% for error in form.confirm_password.errors %}
+                            <span class="text-danger">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success btn-lg w-100">Register</button>
+                </div>
+            </div>
         </div>
     </form>
+
     <div class="text-center mt-3">
         <p>Already have an account? <a href="{{ url_for('main.login') }}">Login here</a></p>
     </div>
 </div>
+
+<style>
+.auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: white;
+}
+
+.card {
+    border: none;
+    background-color: #f8f9fa;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.text-danger {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.alert {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Add smooth transition for collapse */
+.collapse {
+    transition: all 0.3s ease;
+}
+</style>
+
+<!-- Simple script to show/hide professional fields -->
+<script>
+document.getElementById('roleSelect').addEventListener('change', function() {
+    var professionalFields = document.getElementById('professionalFields');
+    professionalFields.classList.toggle('d-none', this.value !== 'professional');
+});
+</script>
 {% endblock %}

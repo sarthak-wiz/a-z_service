@@ -1,99 +1,146 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <h2>Admin Dashboard</h2>
     
-    <div class="row mt-4">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Professionals</h5>
+                    <h2 class="card-text">{{ total_professionals }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Approvals</h5>
+                    <h2 class="card-text">{{ pending_approvals }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Blocked Professionals</h5>
+                    <h2 class="card-text">{{ blocked_professionals }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Customers</h5>
+                    <h2 class="card-text">{{ total_customers }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Services</h3>
-                    <a href="{{ url_for('admin.add_service') }}" class="btn btn-primary">Add New Service</a>
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
                 </div>
                 <div class="card-body">
-                    {% if services %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Base Price</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for service in services %}
-                            <tr>
-                                <td>{{ service.name }}</td>
-                                <td>{{ service.description }}</td>
-                                <td>${{ "%.2f"|format(service.base_price) }}</td>
-                                <td>
-                                    <a href="{{ url_for('admin.edit_service', service_id=service.id) }}" 
-                                       class="btn btn-sm btn-info">Edit</a>
-                                    <form action="{{ url_for('admin.delete_service', service_id=service.id) }}" 
-                                          method="POST" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                onclick="return confirm('Are you sure you want to delete this service?')">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <p>No services available.</p>
+                    <a href="{{ url_for('admin.search_professionals') }}" class="btn btn-primary me-2">
+                        Search Professionals
+                    </a>
+                    {% if pending_approvals > 0 %}
+                    <a href="{{ url_for('admin.search_professionals', search_type='approval', search_term='pending') }}" 
+                       class="btn btn-warning">
+                        Review Pending Approvals ({{ pending_approvals }})
+                    </a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="mb-0">Service Professionals</h3>
-                </div>
-                <div class="card-body">
-                    {% if users %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user.username }}</td>
-                                <td>
-                                    <span class="badge badge-{{ 'success' if user.is_approved else 'warning' }}">
-                                        {{ 'Approved' if user.is_approved else 'Pending' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if not user.is_approved %}
-                                    <form action="{{ url_for('admin.approve_professional', user_id=user.id) }}" 
+    <!-- Recent Professionals -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Recent Professionals</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Professional ID</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for professional in recent_professionals %}
+                        <tr>
+                            <td>{{ professional.username }}</td>
+                            <td>{{ professional.professional_id }}</td>
+                            <td>{{ professional.location }}</td>
+                            <td>
+                                {% if professional.is_approved %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                                {% if professional.is_blocked %}
+                                    <span class="badge bg-danger">Blocked</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if not professional.is_approved %}
+                                    <form action="{{ url_for('admin.approve_professional', user_id=professional.id) }}"
                                           method="POST" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Approve
+                                        </button>
                                     </form>
                                     {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <p>No service professionals registered.</p>
-                    {% endif %}
-                </div>
+                                    
+                                    <form action="{{ url_for('admin.block_professional', user_id=professional.id) }}"
+                                          method="POST" class="d-inline ms-1">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            {{ 'Unblock' if professional.is_blocked else 'Block' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.card {
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    margin-bottom: 0.5rem;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+</style>
 {% endblock %} 

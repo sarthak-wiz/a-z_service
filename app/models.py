@@ -13,6 +13,11 @@ class User(UserMixin, db.Model):
     is_blocked = db.Column(db.Boolean, default=False)
     average_rating = db.Column(db.Float, default=0.0)
     
+    # New fields
+    location = db.Column(db.String(100))
+    pincode = db.Column(db.String(6))
+    professional_id = db.Column(db.String(8), unique=True)  # For format PRO12345
+    
     # Relationships
     service_requests_made = db.relationship('ServiceRequest', 
                                           foreign_keys='ServiceRequest.customer_id',
@@ -36,9 +41,11 @@ class Service(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
+    description = db.Column(db.Text, nullable=False)
     base_price = db.Column(db.Float, nullable=False)
-    time_required = db.Column(db.String(50), nullable=False)  # e.g., "2 hours", "1 day"
+    time_required = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(100))
+    pincode = db.Column(db.String(10))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

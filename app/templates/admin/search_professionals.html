@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Search Professionals</h2>
+    
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    {{ form.search_term(class="form-control", placeholder="Search term...") }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.search_type(class="form-control") }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Professionals List -->
+    <div class="row">
+        {% for professional in professionals %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ professional.username }}</h5>
+                    <p class="card-text">
+                        <strong>Professional ID:</strong> {{ professional.professional_id }}<br>
+                        <strong>Location:</strong> {{ professional.location }}<br>
+                        <strong>PIN Code:</strong> {{ professional.pincode }}<br>
+                        <strong>Status:</strong> 
+                        {% if professional.is_approved %}
+                            <span class="badge bg-success">Approved</span>
+                        {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                        {% if professional.is_blocked %}
+                            <span class="badge bg-danger">Blocked</span>
+                        {% endif %}
+                    </p>
+                    
+                    <div class="d-flex gap-2">
+                        {% if not professional.is_approved %}
+                        <form action="{{ url_for('admin.approve_professional', user_id=professional.id) }}"
+                              method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                Approve
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <form action="{{ url_for('admin.block_professional', user_id=professional.id) }}"
+                              method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                {{ 'Unblock' if professional.is_blocked else 'Block' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

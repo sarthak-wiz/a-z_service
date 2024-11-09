@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.models import ServiceRequest, Service, Review, User
 from app import db
-from app.forms import ReviewForm, ServiceRequestForm
+from app.forms import ReviewForm, ServiceRequestForm, ServiceSearchForm
 from functools import wraps
 
 customer_bp = Blueprint('customer', __name__)
@@ -132,3 +132,35 @@ def cancel_request(request_id):
     db.session.commit()
     flash('Service request cancelled successfully.', 'success')
     return redirect(url_for('customer.dashboard'))
+
+@customer_bp.route('/search_services', methods=['GET', 'POST'])
+@customer_required
+def search_services():
+    form = ServiceSearchForm()
+    services = []
+    
+    if form.validate_on_submit() or request.args.get('search_term'):
+        search_term = form.search_term.data or request.args.get('search_term')
+        search_type = form.search_type.data or request.args.get('search_type', 'name')
+        
+        if search_term:
+            if search_type == 'name':
+                services = Service.query.filter(Service.name.ilike(f'%{search_term}%')).all()
+            elif search_type == 'location':
+                services = Service.query.filter(Service.location.ilike(f'%{search_term}%')).all()
+            elif search_type == 'pincode':
+                services = Service.query.filter(Service.pincode == search_term).all()
+            elif search_type == 'id':
+                try:
+                    service_id = int(search_term)
+                    services = Service.query.filter_by(id=service_id).all()
+                except ValueError:
+                    flash('Invalid Service ID', 'danger')
+        else:
+            services = Service.query.all()
+    else:
+        services = Service.query.all()
+    
+    return render_template('customer/search_services.html', 
+                         form=form, 
+                         services=services)

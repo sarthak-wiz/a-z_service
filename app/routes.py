@@ -3,6 +3,10 @@ from flask_login import login_user, logout_user, login_required, current_user
 from . import db
 from .models import User, Service, ServiceRequest
 from .forms import LoginForm, RegistrationForm, ServiceForm
+from werkzeug.security import generate_password_hash
+from sqlalchemy.exc import IntegrityError
+import random
+import string
 
 main_bp = Blueprint('main', __name__)
 
@@ -19,46 +23,72 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.password == form.password.data:
-            if user.role == 'professional' and not user.is_approved:
-                flash('Your account is pending admin approval.', 'warning')
-                return redirect(url_for('main.login'))
-            
             login_user(user)
             next_page = request.args.get('next')
-            if next_page:
-                return redirect(next_page)
-            
-            # Role-specific redirects
-            if user.role == 'admin':
-                return redirect(url_for('admin.dashboard'))
-            elif user.role == 'professional':
-                return redirect(url_for('professional.dashboard'))
-            else:
-                return redirect(url_for('customer.dashboard'))
+            return redirect(next_page if next_page else url_for('main.index'))
         else:
-            flash('Login failed. Check your credentials.', 'danger')
+            flash('Invalid username or password', 'danger')
+    
     return render_template('login.html', form=form)
+
+def generate_professional_id():
+    """Generate a unique professional ID in format PRO12345"""
+    while True:
+        # Generate a random 5-digit number
+        number = ''.join(random.choices(string.digits, k=5))
+        professional_id = f'PRO{number}'
+        
+        # Check if this ID already exists
+        existing_user = User.query.filter_by(professional_id=professional_id).first()
+        if not existing_user:
+            return professional_id
 
 @main_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-        
+    
     form = RegistrationForm()
+    professional_id = None
+    
+    # Generate professional ID if role is professional
+    if request.method == 'GET' and request.args.get('role') == 'professional':
+        professional_id = generate_professional_id()
+    
     if form.validate_on_submit():
-        user = User(
-            username=form.username.data,
-            password=form.password.data,
-            role=form.role.data,
-            is_approved=form.role.data == 'customer'  # Auto-approve customers, professionals need admin approval
-        )
-        db.session.add(user)
-        db.session.commit()
-        flash('Registration successful. Please log in.', 'success')
-        if form.role.data == 'professional':
-            flash('Your account will be reviewed by an admin before you can access professional features.', 'info')
-        return redirect(url_for('main.login'))
-    return render_template('register.html', form=form)
+        try:
+            user_data = {
+                'username': form.username.data,
+                'password': form.password.data,  # No hashing
+                'role': form.role.data,
+                'is_approved': form.role.data != 'professional'
+            }
+            
+            if form.role.data == 'professional':
+                user_data.update({
+                    'professional_id': request.form.get('professional_id'),
+                    'location': form.location.data,
+                    'pincode': form.pincode.data
+                })
+            
+            user = User(**user_data)
+            db.session.add(user)
+            db.session.commit()
+            
+            message = 'Registration successful!'
+            if form.role.data == 'professional':
+                message += ' Please wait for admin approval.'
+            flash(message, 'success')
+            
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Registration failed. Please try again.', 'danger')
+    
+    return render_template('register.html', 
+                         form=form, 
+                         professional_id=professional_id)
 
 @main_bp.route('/logout')
 @login_required
