@@ -30,7 +30,8 @@
         </div>
     </div>
 
-    <!-- Add after the services section (around line 31) -->
+    <!-- Add after the services section -->
+    {% if status_chart %}
     <div class="card mb-4">
         <div class="card-header">
             <h3>My Service Request Statistics</h3>
@@ -41,6 +42,7 @@
                 alt="My Service Request Status Distribution">
         </div>
     </div>
+    {% endif %}
     
     <!-- Service Requests Section -->
     <div class="card mb-4">

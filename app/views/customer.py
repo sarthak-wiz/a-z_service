@@ -85,22 +85,27 @@ def dashboard():
         'completed': 0,
         'cancelled': 0
     }
+    
     for request in service_requests:
         status_counts[request.status] = status_counts.get(request.status, 0) + 1
     
-    plt.figure(figsize=(8, 8))
-    plt.pie(status_counts.values(),
-        labels=status_counts.keys(),
-        colors=['#007bff', '#17a2b8', '#ffc107', '#28a745', '#dc3545'],
-        autopct='%1.1f%%'
-    )
-    plt.title('My Service Requests Status')
-    
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='png', bbox_inches='tight')
-    buffer.seek(0)
-    status_chart = base64.b64encode(buffer.getvalue()).decode()
-    plt.close()
+    # Check if we have any non-zero values
+    if any(status_counts.values()):
+        plt.figure(figsize=(8, 8))
+        plt.pie(list(status_counts.values()),
+            labels=list(status_counts.keys()),
+            colors=['#007bff', '#17a2b8', '#ffc107', '#28a745', '#dc3545'],
+            autopct='%1.1f%%'
+        )
+        plt.title('My Service Requests Status')
+        
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png', bbox_inches='tight')
+        buffer.seek(0)
+        status_chart = base64.b64encode(buffer.getvalue()).decode()
+        plt.close()
+    else:
+        status_chart = None
     
     return render_template('customer/dashboard.html',
                          services=services,

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.models import User, ServiceRequest, Service, db
+from app.forms import ServiceForm  # Add this import at the top
 from functools import wraps
 import matplotlib
 matplotlib.use('Agg')
@@ -165,7 +166,11 @@ def search_professionals():
 @admin_required
 def manage_services():
     services = Service.query.all()
-    return render_template('admin/manage_services.html', services=services)
+    form = ServiceForm()  # Create an instance of ServiceForm
+    return render_template('admin/manage_services.html', 
+                         services=services, 
+                         form=form)  # Pass both services and form to template
+
 
 @admin_bp.route('/add_service', methods=['GET', 'POST'])
 @admin_required
