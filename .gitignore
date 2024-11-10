@@ -47,6 +47,5 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
-
-
-migrations
+*/migrations/
+migrations/
