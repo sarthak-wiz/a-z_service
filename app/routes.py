@@ -59,7 +59,7 @@ def register():
         try:
             user_data = {
                 'username': form.username.data,
-                'password': form.password.data,  # No hashing
+                'password': form.password.data, 
                 'role': form.role.data,
                 'is_approved': form.role.data != 'professional'
             }
@@ -90,9 +90,14 @@ def register():
                          form=form, 
                          professional_id=professional_id)
 
+
+
 @main_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
+
+
+

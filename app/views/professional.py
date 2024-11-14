@@ -23,18 +23,18 @@ def professional_required(f):
 @professional_bp.route('/dashboard')
 @professional_required
 def dashboard():
-    # Get available requests (not assigned to any professional)
+    
     available_requests = ServiceRequest.query.filter_by(
         professional_id=None,
         status='requested'
     ).all()
     
-    # Get requests assigned to current professional
+    
     assigned_requests = ServiceRequest.query.filter_by(
         professional_id=current_user.id
     ).order_by(ServiceRequest.date_of_request.desc()).all()
     
-    plt.switch_backend('Agg')  # Ensure non-interactive backend
+    plt.switch_backend('Agg') 
     status_counts = {
         'assigned': 0,
         'in_progress': 0,
@@ -45,26 +45,31 @@ def dashboard():
     for request in assigned_requests:
         status_counts[request.status] = status_counts.get(request.status, 0) + 1
     
-    # Create figure outside of any loops
-    fig = plt.figure(figsize=(8, 8))
-    plt.pie(list(status_counts.values()),
-        labels=list(status_counts.keys()),
-        colors=['#007bff', '#17a2b8', '#28a745', '#ffc107'],
-        autopct='%1.1f%%'
-    )
-    plt.title('My Service Requests Status')
     
-    # Save to buffer
-    buffer = io.BytesIO()
-    fig.savefig(buffer, format='png', bbox_inches='tight')
-    buffer.seek(0)
-    status_chart = base64.b64encode(buffer.getvalue()).decode()
-    plt.close(fig)  # Explicitly close the figure
+    if any(status_counts.values()):
+        fig = plt.figure(figsize=(8, 8))
+        plt.pie(list(status_counts.values()),
+            labels=list(status_counts.keys()),
+            colors=['#007bff', '#17a2b8', '#28a745', '#ffc107'],
+            autopct='%1.1f%%'
+        )
+        plt.title('My Service Requests Status')
+    
+        
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format='png', bbox_inches='tight')
+        buffer.seek(0)
+        status_chart = base64.b64encode(buffer.getvalue()).decode()
+        plt.close(fig) 
+    else:
+        status_chart = None
     
     return render_template('professional/dashboard.html',
                          available_requests=available_requests,
                          assigned_requests=assigned_requests,
                          status_chart=status_chart)
+
+
 
 
 @professional_bp.route('/accept_request/<int:request_id>', methods=['POST'])
@@ -109,6 +114,8 @@ def start_service(request_id):
         print(f"Error: {str(e)}")
     
     return redirect(url_for('professional.dashboard'))
+
+
 
 @professional_bp.route('/complete_service/<int:request_id>', methods=['POST'])
 @professional_required

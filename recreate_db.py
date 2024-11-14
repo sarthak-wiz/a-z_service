@@ -10,16 +10,16 @@ with app.app_context():
     # Create all tables
     db.create_all()
 
-    # Create admin user with simple password
+    
     admin = User(
         username='admin',
-        password='admin123',  # Simple password without hashing
+        password='admin123',  
         role='admin',
         is_approved=True
     )
     db.session.add(admin)
 
-    # Create sample professional
+    # creating sample professional
     professional = User(
         username='pro1',
         password='password123',
@@ -31,7 +31,7 @@ with app.app_context():
     )
     db.session.add(professional)
 
-    # Create sample customer
+    # creating sample customer
     customer = User(
         username='customer1',
         password='password123',
@@ -40,7 +40,7 @@ with app.app_context():
     )
     db.session.add(customer)
 
-    # Create initial services
+    # creating initial services
     services = [
         Service(
             name='House Cleaning',
@@ -86,7 +86,7 @@ with app.app_context():
         )
     ]
 
-    # Add all to session
+    
     db.session.add(admin)
     for service in services:
         db.session.add(service)
@@ -97,3 +97,7 @@ with app.app_context():
     except Exception as e:
         db.session.rollback()
         print(f"Error: {str(e)}")
+
+
+
+        

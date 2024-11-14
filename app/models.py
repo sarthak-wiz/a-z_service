@@ -13,12 +13,11 @@ class User(UserMixin, db.Model):
     is_blocked = db.Column(db.Boolean, default=False)
     average_rating = db.Column(db.Float, default=0.0)
     
-    # New fields
+    
     location = db.Column(db.String(100))
     pincode = db.Column(db.String(6))
     professional_id = db.Column(db.String(8), unique=True)  # For format PRO12345
     
-    # Relationships
     service_requests_made = db.relationship('ServiceRequest', 
                                           foreign_keys='ServiceRequest.customer_id',
                                           backref='customer')
@@ -48,7 +47,7 @@ class Service(db.Model):
     pincode = db.Column(db.String(10))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
+    
     service_requests = db.relationship('ServiceRequest', backref='requested_service')
 
     def __repr__(self):
@@ -66,7 +65,7 @@ class ServiceRequest(db.Model):
     date_of_request = db.Column(db.DateTime, nullable=False)
     remarks = db.Column(db.Text)
     
-    # Relationships
+    
     reviews = db.relationship('Review', backref='service_request', lazy=True)
 
     def __repr__(self):
@@ -95,3 +94,6 @@ class Review(db.Model):
             total_rating = sum(review.rating for review in reviews)
             professional.average_rating = total_rating / len(reviews)
             db.session.commit()
+
+
+

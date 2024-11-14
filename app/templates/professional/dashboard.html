@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <h2>Professional Dashboard</h2>
 
-    <!-- Available Service Requests -->
+    
     <div class="card mb-4">
         <div class="card-header">
             <h3>Available Service Requests</h3>
@@ -43,20 +43,22 @@
         </div>
     </div>
 
-    <!-- Add after the statistics cards row (around line 44) -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Professional Status Distribution</h5>
-            </div>
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ status_chart }}" 
-                     class="img-fluid" 
-                     alt="Professional Status Distribution">
+    
+    {% if status_chart %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Professional Status Distribution</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="data:image/png;base64,{{ status_chart }}" 
+                        class="img-fluid" 
+                        alt="Professional Status Distribution">
+                </div>
             </div>
         </div>
-    </div>
+    {% endif %}
     <!--
     <div class="col-md-6">
         <div class="card">
@@ -73,7 +75,7 @@
     </div>
     -->
 
-    <!-- Assigned Service Requests -->
+    
     <div class="card mt-4">
         <div class="card-header">
             <h3>My Assigned Requests</h3>

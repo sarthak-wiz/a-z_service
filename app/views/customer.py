@@ -25,17 +25,17 @@ def customer_required(f):
 def add_review(request_id):
     service_request = ServiceRequest.query.get_or_404(request_id)
     
-    # Check if this is the customer's request
+    
     if service_request.customer_id != current_user.id:
         flash('You can only review your own service requests.', 'danger')
         return redirect(url_for('customer.dashboard'))
     
-    # Check if request is pending customer approval
+    
     if service_request.status != 'pending_customer_approval':
         flash('You can only review services that are pending your approval.', 'danger')
         return redirect(url_for('customer.dashboard'))
     
-    # Check if already reviewed
+    
     existing_review = Review.query.filter_by(service_request_id=request_id).first()
     if existing_review:
         flash('You have already reviewed this service.', 'warning')
@@ -51,13 +51,13 @@ def add_review(request_id):
             comment=form.comment.data
         )
         try:
-            # Add review
+            
             db.session.add(review)
-            # Update service request status to completed
+            
             service_request.status = 'completed'
             db.session.commit()
             
-            # Update professional's average rating
+            
             review.update_professional_rating()
             
             flash('Review submitted successfully! Service marked as completed.', 'success')
@@ -77,7 +77,7 @@ def dashboard():
     services = Service.query.all()
     service_requests = ServiceRequest.query.filter_by(customer_id=current_user.id).all()
     
-    # Generate Service Request Status Chart
+    
     status_counts = {
         'requested': 0,
         'assigned': 0,
@@ -89,7 +89,7 @@ def dashboard():
     for request in service_requests:
         status_counts[request.status] = status_counts.get(request.status, 0) + 1
     
-    # Check if we have any non-zero values
+    
     if any(status_counts.values()):
         plt.figure(figsize=(8, 8))
         plt.pie(list(status_counts.values()),
@@ -112,6 +112,8 @@ def dashboard():
                          service_requests=service_requests,
                          status_chart=status_chart)
 
+
+
 @customer_bp.route('/request_service', methods=['GET', 'POST'])
 @customer_required
 def request_service():
@@ -121,10 +123,10 @@ def request_service():
         service = Service.query.get_or_404(service_id)
     
     form = ServiceRequestForm()
-    # Populate service choices
+    
     form.service_id.choices = [(s.id, s.name) for s in Service.query.all()]
     
-    # If service_id is provided, set it as default
+    
     if service_id:
         form.service_id.data = service_id
     
@@ -150,6 +152,7 @@ def request_service():
                          form=form, 
                          service=service)
 
+
 @customer_bp.route('/cancel_request/<int:request_id>', methods=['POST'])
 @login_required
 def cancel_request(request_id):
@@ -167,6 +170,7 @@ def cancel_request(request_id):
     db.session.commit()
     flash('Service request cancelled successfully.', 'success')
     return redirect(url_for('customer.dashboard'))
+
 
 @customer_bp.route('/search_services', methods=['GET', 'POST'])
 @customer_required

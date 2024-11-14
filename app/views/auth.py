@@ -20,10 +20,10 @@ def register():
             'username': form.username.data,
             'password': hashed_password,
             'role': form.role.data,
-            'is_approved': form.role.data != 'professional'  # Auto-approve non-professionals
+            'is_approved': form.role.data != 'professional'  
         }
         
-        # Add professional-specific fields if role is professional
+        
         if form.role.data == 'professional':
             user_data.update({
                 'professional_id': form.professional_id.data.upper(),

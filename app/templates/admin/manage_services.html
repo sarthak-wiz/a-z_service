@@ -9,7 +9,7 @@
         </button>
     </div>
 
-    <!-- Services List -->
+    
     <div class="row">
         {% for service in services %}
         <div class="col-md-6 mb-4">
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <!-- Edit Modal -->
+        
         <div class="modal fade" id="editServiceModal{{ service.id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -76,7 +76,7 @@
             </div>
         </div>
 
-        <!-- Delete Modal -->
+        
         <div class="modal fade" id="deleteServiceModal{{ service.id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -99,7 +99,7 @@
         {% endfor %}
     </div>
 
-    <!-- Add Service Modal -->
+    
     <div class="modal fade" id="addServiceModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -137,3 +137,5 @@
     </div>
 </div>
 {% endblock %} 
+
+

@@ -21,22 +21,23 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
-    # Get counts for dashboard
+    
     total_professionals = User.query.filter_by(role='professional').count()
     pending_approvals = User.query.filter_by(role='professional', is_approved=False).count()
     blocked_professionals = User.query.filter_by(role='professional', is_blocked=True).count()
     total_customers = User.query.filter_by(role='customer').count()
     
-    # Get recent professionals (last 5)
+    
     recent_professionals = User.query.filter_by(role='professional')\
         .order_by(User.id.desc())\
         .limit(5)\
         .all()
     
-    # Generate Professional Status Chart
+    
     plt.figure(figsize=(8, 8))
     plt.pie([
         total_professionals - pending_approvals - blocked_professionals,
@@ -49,14 +50,14 @@ def dashboard():
     )
     plt.title('Professional Status Distribution')
     
-    # Save to base64 string
+    
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png', bbox_inches='tight')
     buffer.seek(0)
     professional_chart = base64.b64encode(buffer.getvalue()).decode()
     plt.close()
     
-    # Generate Service Request Status Chart
+    
     service_requests = ServiceRequest.query.all()
     status_counts = {
         'requested': 0,
@@ -91,6 +92,8 @@ def dashboard():
                          requests_chart=requests_chart,
                          recent_professionals=recent_professionals)
 
+
+
 @admin_bp.route('/approve_professional/<int:user_id>', methods=['POST'])
 @admin_required
 def approve_professional(user_id):
@@ -118,7 +121,7 @@ def block_professional(user_id):
         flash('Invalid user role.', 'danger')
         return redirect(url_for('admin.dashboard'))
     
-    professional.is_blocked = not professional.is_blocked  # Toggle blocked status
+    professional.is_blocked = not professional.is_blocked  
     try:
         db.session.commit()
         status = 'blocked' if professional.is_blocked else 'unblocked'
@@ -130,6 +133,7 @@ def block_professional(user_id):
     
     return redirect(url_for('admin.dashboard'))
 
+
 @admin_bp.route('/search_professionals', methods=['GET', 'POST'])
 @admin_required
 def search_professionals():
@@ -140,10 +144,9 @@ def search_professionals():
         search_term = form.search_term.data
         search_type = form.search_type.data
         
-        # Base query
         query = User.query.filter_by(role='professional')
         
-        # Apply search filter if search term is provided
+        
         if search_term:
             if search_type == 'username':
                 query = query.filter(User.username.ilike(f'%{search_term}%'))
@@ -166,10 +169,10 @@ def search_professionals():
 @admin_required
 def manage_services():
     services = Service.query.all()
-    form = ServiceForm()  # Create an instance of ServiceForm
+    form = ServiceForm()  
     return render_template('admin/manage_services.html', 
                          services=services, 
-                         form=form)  # Pass both services and form to template
+                         form=form)  
 
 
 @admin_bp.route('/add_service', methods=['GET', 'POST'])
@@ -220,6 +223,7 @@ def edit_service(service_id):
             print(f"Error: {str(e)}")
     
     return render_template('admin/edit_service.html', form=form, service=service)
+
 
 @admin_bp.route('/delete_service/<int:service_id>', methods=['POST'])
 @admin_required
